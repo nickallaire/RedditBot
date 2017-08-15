@@ -10,16 +10,17 @@ import re
 import requests
 import bs4
 
-path = '/Users/nsallaire/Documents/Developer/RedditBot/reddit_bot/commented.txt'
 # Location of file where id's of already visited comments are maintained
+path = '/Users/nsallaire/Documents/Developer/RedditBot/reddit_bot/commented.txt'
 
+# Text to be posted
 header = 'This is a bot\n'
 footer = '\n\nGoodbye!\n'
-#Text to be posted
+
 
 def authenticate():
     print('Authenticating...\n')
-    reddit = praw.Reddit('explainbot', user_agent = 'this_is_a_test')
+    reddit = praw.Reddit('explainbot', user_agent='web:xkcd-explain-bot:v0.1')
     print('Authenticated as {}\n'.format(reddit.user.me()))
     return reddit
 
@@ -32,9 +33,9 @@ def fetchdata(url):
     data = ''
     while True:
         if isinstance(tag, bs4.element.Tag):
-            if (tag.name == 'h2'):
+            if tag.name == 'h2':
                 break
-            if (tag.name == 'h3'):
+            if tag.name == 'h3':
                 tag = tag.nextSibling
             else:
                 data = data + '\n' + tag.text
@@ -45,7 +46,7 @@ def fetchdata(url):
 
 
 def run_bot(reddit):
-    for comment in reddit.subreddit('test').comments(limit = 250):
+    for comment in reddit.subreddit('test').comments(limit=250):
         match = re.findall("[a-z]*[A-Z]*[0-9]*https://www.xkcd.com/[0-9]+", comment.body)
         if match:
             print("Link found in comment with comment ID: " + comment.id)
@@ -59,8 +60,8 @@ def run_bot(reddit):
             try:
                 explanation = fetchdata(myurl)
             except:
+                # Typical cause for this will be a URL for an xkcd that doesn't not exist
                 print('Exception!!! Possibly incorrect xkcd URL...\n')
-                # Typical cause for this will be a URL for an xkcd that doesn not exist
             else:
                 if comment.id not in file_obj_r.read().splitlines():
                     print('Link is unique....posting explanation\n')
@@ -78,6 +79,7 @@ def run_bot(reddit):
 
     print('Waiting 60 seconds...\n')
     time.sleep(60)
+
 
 def main():
     reddit = authenticate()
